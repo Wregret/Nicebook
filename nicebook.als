@@ -14,12 +14,8 @@ sig User {
     wall : one Wall
 }
 sig Wall {
-    notes : set Note,
-    photos : set Photo
+    publishables : set Publishable
 }
-// sig Tag {
-//     tag : Publishable -> one User
-// }
 
 abstract sig Content {
     privacyLevel : PrivacyLevel
