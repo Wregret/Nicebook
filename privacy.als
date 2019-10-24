@@ -2,7 +2,8 @@
 // Team: Team 5
 // Model for system: Nicebook
 
-// NOTE: this file defines all the constants and enums
+// NOTE: this file defines the privacy level as constants
+
 let levelOnlyMe = 0
 let levelFriends = 1
 let levelFriendsOfFriends = 2
