@@ -77,7 +77,7 @@ pred wallInvariant[n : Nicebook] {
     // all the notes and photos posted on the user's wall must be 
     // owned by the user or his / her friends
     all u1, u2 : User |
-        u1.wall.notes in n.posts[u2]
+        u1.wall.publishables in n.posts[u2]
         implies (u2 in n.friends[u1] or u1 = u2)
     // every user has his / her unique wall
     all u1, u2 : User |
