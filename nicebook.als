@@ -7,7 +7,8 @@ open privacy
 /** Signatures **/
 one sig Nicebook {
     posts : User -> some Content,   // Contents created by users
-    friends : User -> set User      // Friendships between users
+    friends : User -> set User,     // Friendships between users
+    tag : Publishable -> one User   // Tags from publishable contents to users
 }
 sig User {
     wall : one Wall
@@ -16,21 +17,20 @@ sig Wall {
     notes : set Note,
     photos : set Photo
 }
-sig Tag {
-    noteTag : Note -> one User,
-    photoTag : Photo -> one User
-}
+// sig Tag {
+//     tag : Publishable -> one User
+// }
 
 abstract sig Content {
     privacyLevel : PrivacyLevel
 }
-sig Note extends Content {
+abstract sig Publishable extends Content {
+    publishableComment : set Comment
+}
+sig Note extends Publishable {
     photo : set Photo,
-    noteComment : set Comment
 }
-sig Photo extends Content {
-    photoComment : set Comment
-}
+sig Photo extends Publishable {}
 sig Comment extends Content {
     commentComment: set Comment
 }
@@ -64,14 +64,10 @@ pred commentInvariant[c : Comment] {
     noOrphanComment[c]
 }
 
-pred tagInvariant[t : Tag, n : Nicebook] {
-    // only the owner of a note can tag his / her friends
-    all u1, u2 : User, note : Note |
-        note in n.posts[u1] and u2 in t.noteTag[note] implies
-        u2 in n.friends[u1]
-    // only the owner of a photo can tag his / her friends
-    all u1, u2 : User, photo : Photo |
-        photo in n.posts[u1] and u2 in t.photoTag[photo] implies
+pred tagInvariant[n : Nicebook] {
+    // only the owner of a publishable content can tag his / her friends
+    all u1, u2 : User, p : Publishable |
+        p in n.posts[u1] and u2 in n.tag[p] implies
         u2 in n.friends[u1]
 }
 
@@ -115,11 +111,8 @@ pred noSelfComment[c : Comment] {
 
 pred noOrphanComment[c : Comment] {
     // a comment must be associated to a note or a photo or another comment
-    some n : Note |
-        c in n.noteComment
-    or
-    some p : Photo |
-        c in p.photoComment
+    some p : Publishable |
+        c in p.publishableComment
     or
     some comment : Comment |
         c in comment.commentComment and c != comment
@@ -129,10 +122,9 @@ pred noOrphanComment[c : Comment] {
 run generateNicebook {
     all n : Nicebook |
         nicebookInvariant[n] and
+        contentInvariant[n] and
         wallInvariant[n] and
-        contentInvariant[n]
-    all n : Nicebook, t : Tag |
-        tagInvariant[t, n]
+        tagInvariant[n]
     all c : Comment |
         commentInvariant[c]
 }
