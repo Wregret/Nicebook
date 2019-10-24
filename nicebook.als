@@ -5,6 +5,8 @@
 // NOTE: relational approach for privacy implementation
 //       - viewable : User
 
+open privacy
+
 /** Signatures **/
 one sig Nicebook {
     posts : User -> Content,   // Contents created by users
@@ -23,7 +25,7 @@ sig NoteTag extends Tag {}
 sig PhotoTag extends Tag {}
 
 abstract sig Content {
-    viewable : User
+    privacyLevel : PrivacyLevel
 }
 sig Note extends Content {
     photo : set Photo,
@@ -49,17 +51,6 @@ fun getFriendsOfFriends[n : Nicebook, u : User] : set User {
 
 fun getEveryone[n : Nicebook] : set User {
     n.friends.User
-}
-
-/** Operations **/
-pred upload[n, n' : Nicebook, u : User, c : Content] {
-    n'.friends = n.friends
-    n'.posts = n.posts + u -> c
-}
-
-pred remove[n, n' : Nicebook, u : User, c : Content] {
-    n'.friends = n.friends
-    n'.posts = n.posts - u -> c
 }
 
 /** Invairants **/
