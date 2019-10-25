@@ -80,4 +80,23 @@ assert checkUploadThenRemove {
 		upload[n, n', u, c] and remove[n', n'', u, c] implies
 			n = n''
 }
-check checkUploadThenRemove
+//check checkUploadThenRemove
+
+assert checkAddTag {
+	all n, n' : Nicebook, p : Publishable, u : User |
+		addTag[n, n', p, u] and invariant[n] implies invariant[n']
+}
+//check checkAddTag
+
+assert checkRemoveTag {
+	all n, n' : Nicebook, p : Publishable, u : User |
+		removeTag[n, n', p, u] and invariant[n] implies invariant[n']
+}
+//check checkRemoveTag
+
+assert checkAddThenRemoveTag {
+	all n, n', n'' : Nicebook, u : User, p : Publishable |
+		addTag[n, n', p, u] and removeTag[n', n'', p, u] implies
+			n = n''
+}
+//check checkAddThenRemoveTag
