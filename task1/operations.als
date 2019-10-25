@@ -225,7 +225,9 @@ pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
             u in getEveryone[n]
         )
     )
-    // Also the owner cannot be tagged in his/her post
+    // the publishable content must have been published on the owner's wall
+    n.posts.p in p.wall.owner
+    // also the owner cannot be tagged in his/her post
     u != n.posts.p
     // the tag should not exist already
     p -> u not in n.tags
