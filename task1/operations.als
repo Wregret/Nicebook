@@ -8,17 +8,17 @@ open functions
 /** Operations **/
 // upload Note Publishable
 pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
-    // pre condition
+    /** pre condition **/
     u -> note not in n.posts
 
-    // frame condition
+    /** frame condition **/
     n'.tags = n.tags
     n'.friends = n.friends
 
     // promotion
 
 
-    // post condition
+    /** post condition **/
     note.contentPrivacy = pl // Set privacy for Note
     all p : note.photo | p.contentPrivacy = pl // Set privacy for all attached photos to note
     n'.posts = n.posts + u -> note
@@ -26,43 +26,43 @@ pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
 
 //upload Photo Publishable
 pred upload[n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel] {
-    // pre condition
+    /** pre condition **/
     u -> p not in n.posts
 
-    // frame condition
+    /** frame condition **/
     n'.tags = n.tags
     n'.friends = n.friends
 
     // promotion
 
 
-    // post condition
+    /** post condition **/
     p.contentPrivacy = pl
     n'.posts = n.posts + u -> p
 }
 
 // Upload Comment
 pred upload[n, n' : Nicebook, u : User, c : Comment] {
-    // pre condition
+    /** pre condition **/
     u -> c not in n.posts
 
-    // frame condition
+    /** frame condition **/
     n'.tags = n.tags
     n'.friends = n.friends
 
-    // post condition
+    /** post condition **/
     n'.posts = n.posts + u -> c
 }
 
 pred remove[n, n' : Nicebook, u : User, c : Content] {
-    // pre condition
+    /** pre condition **/
     u -> c in n.posts
 
-    // frame condition
+    /** frame condition **/
     n'.tags = n.tags
     n'.friends = n.friends
 
-    // post condition
+    /** post condition **/
     n'.posts = n.posts - u -> c
 }
 
@@ -114,6 +114,7 @@ pred unpublish[n, n' : Nicebook, p, p' : Publishable, u : User] {
     p'.wall = p.wall - owner.u
 }
 
+// Overloaded function for adding the comment to a Publishable
 pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     /** pre condition **/
     // comment has already been uploaded by user
@@ -146,6 +147,7 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
         n''.posts = n'.posts + pu -> p'
 }
 
+// Overloaded function for adding the comment to a Comment
 pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
     /** pre condition **/
     // comment has already been uploaded by user
@@ -206,44 +208,44 @@ assert checkUploadNote {
 	all n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel |
 		upload[n, n', u, note, pl] and invariant[n] implies invariant[n']
 }
-//check checkUploadNote
+check checkUploadNote
 
 assert checkUploadPhoto {
     all n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel |
 		upload[n, n', u, p, pl] and invariant[n] implies invariant[n']
 }
-//check checkUploadPhoto
+check checkUploadPhoto
 
 assert checkUploadComment {
     all n, n' : Nicebook, u : User, c : Comment |
 		upload[n, n', u, c] and invariant[n] implies invariant[n']
 }
-//check checkUploadComment
+check checkUploadComment
 
 assert checkRemove {
 	all n, n' : Nicebook, u : User, c : Content |
 		remove[n, n', u, c] and invariant[n] implies invariant[n']
 }
-//check checkRemove
+check checkRemove
 
 assert checkAddTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
 		addTag[n, n', p, u] and invariant[n] implies invariant[n']
 }
-//check checkAddTag
+check checkAddTag
 
 assert checkRemoveTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
 		removeTag[n, n', p, u] and invariant[n] implies invariant[n']
 }
-//check checkRemoveTag
+check checkRemoveTag
 
 assert checkAddThenRemoveTag {
 	all n, n', n'' : Nicebook, u : User, p : Publishable |
 		addTag[n, n', p, u] and removeTag[n', n'', p, u] implies
 			n = n''
 }
-//check checkAddThenRemoveTag
+check checkAddThenRemoveTag
 
 assert checkAddComment {
     all n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment |
@@ -251,17 +253,23 @@ assert checkAddComment {
     all n, n', n'' : Nicebook, c, c' : Comment, cm : Comment |
         addComment[n, n', n'', c, c', cm] and invariant[n] implies invariant[n']
 }
-//check checkAddComment
+check checkAddComment
 
-assert checkPublishNote {
-	all n, n' : Nicebook, note, note' : Note , u : User |
-		publish[n, n', note, note', u] and invariant[n] implies invariant[n']
+assert checkPublish {
+	all n, n' : Nicebook, p, p' : Publishable, u : User |
+		publish[n, n', p, p', u] and invariant[n] implies invariant[n']
 }
-//check checkPublish
+check checkPublish
 
 assert checkUnpublish {
-	all n, n' : Nicebook, p, p' : Photo, u : User |
+	all n, n' : Nicebook, p, p' : Publishable, u : User |
 		unpublish[n, n', p, p', u] and invariant[n] implies invariant[n']
 }
-//check checkUnpublish
+check checkUnpublish
 
+assert checkPublishAndUnpublish {
+	all n, n', n'' : Nicebook, p, p', p'' : Publishable, u : User |
+		(publish[n, n', p, p', u] and unpublish[n', n'', p', p'', u]) implies
+		n = n''
+}
+check checkPublishAndUnpublish
