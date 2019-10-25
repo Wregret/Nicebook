@@ -2,7 +2,8 @@
 // Team: Team 5
 // Model for system: Nicebook
 
-// NOTE: this file defines the privacy level as constants
+/** File Description **/
+// privacy.als: containing the enum and signature for privacy level
 
 let levelOnlyMe = 0
 let levelFriends = 1

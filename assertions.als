@@ -2,6 +2,9 @@
 // Team: Team 5
 // Model for system: Nicebook
 
+/** File Description **/
+// asertions.als: containing the assertions and checks
+
 open nicebook
 open functions
 open operations
@@ -79,9 +82,7 @@ check checkPublishAndUnpublishNote
 
 assert noPrivacyViolation {
     all n : Nicebook, u : User, c : Content |
-        (
-            u = n.posts.c or
-            u in n.tags[c]
-        ) implies c in viewable[n, u]
+        (invariant[n] and c in viewable[n, u]) implies
+        u in getUsersByContentPrivacy[n, c]
 }
 check noPrivacyViolation

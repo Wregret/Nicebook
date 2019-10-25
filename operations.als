@@ -240,7 +240,7 @@ pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     n'.tags = n.tags + p -> u
 }
 
-// Remove Tag from publishable
+// Remove Tag from publishable.
 pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
     /** pre condition **/
     p -> u in n.tags
@@ -253,12 +253,13 @@ pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
     n'.tags = n.tags - p -> u
 }
 
-// Setting the privacy level of the wall
+// Setting the privacy level of the wall.
 pred setWallPrivacy[w, w' : Wall, pl : PrivacyLevel ]{
-/** pre condition **/
+    /** pre condition **/
 
-/** frame condition **/
+    /** frame condition **/
     w'.owner = w.owner
-/** post condition **/
+
+    /** post condition **/
     w'.wallPrivacy = pl
 }
