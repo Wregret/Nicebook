@@ -112,13 +112,17 @@ pred noOrphanComment[c : Comment] {
         c in comment.comments and c != comment
 }
 
-// run command
-run generateNicebook {
-    all n : Nicebook |
+// Total invariant
+pred invariant[n : Nicebook] {
         nicebookInvariant[n] and
         contentInvariant[n] and
         wallInvariant[n] and
-        tagInvariant[n]
+        tagInvariant[n] and
     all c : Comment |
         commentInvariant[c]
+}
+
+// run command
+run generateNicebook {
+    all n : Nicebook | invariant[n]
 }
