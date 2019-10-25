@@ -1,41 +1,96 @@
 // Project: Project 1
 // Team: Team 5
-// Model for system: Nicebook
+// Model for system: Nicebook   
 
 open nicebook
+open functions
 
 /** Operations **/
-pred upload[n, n' : Nicebook, u : User, c : Content] {
-    // pre condition
-    u -> c not in n.posts
+// upload Note Publishable
+pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
+    /** pre condition **/
+    u -> note not in n.posts
 
-    // frame condition
+    /** frame condition **/
     n'.tags = n.tags
     n'.friends = n.friends
 
-    // post condition
+    // promotion
+
+
+    /** post condition **/
+    note.contentPrivacy = pl // Set privacy for Note
+    all p : note.photo | p.contentPrivacy = pl // Set privacy for all attached photos to note
+    n'.posts = n.posts + u -> note
+}
+
+//upload Photo Publishable
+pred upload[n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel] {
+    /** pre condition **/
+    u -> p not in n.posts
+
+    /** frame condition **/
+    n'.tags = n.tags
+    n'.friends = n.friends
+
+    // promotion
+
+
+    /** post condition **/
+    p.contentPrivacy = pl
+    n'.posts = n.posts + u -> p
+}
+
+// Upload Comment
+pred upload[n, n' : Nicebook, u : User, c : Comment] {
+    /** pre condition **/
+    u -> c not in n.posts
+
+    /** frame condition **/
+    n'.tags = n.tags
+    n'.friends = n.friends
+
+    /** post condition **/
     n'.posts = n.posts + u -> c
 }
 
 pred remove[n, n' : Nicebook, u : User, c : Content] {
-    // pre condition
+    /** pre condition **/
     u -> c in n.posts
 
-    // frame condition
+    /** frame condition **/
     n'.tags = n.tags
     n'.friends = n.friends
 
-    // post condition
+    /** post condition **/
     n'.posts = n.posts - u -> c
 }
 
-pred publish[n, n' : Nicebook, p, p' : Publishable, u : User] {
+// Publish for Note Publishable
+pred publish[n, n' : Nicebook, note, note' : Note, u : User] {
+    /** pre condition **/
+    // 1. the publishable content is not yet published
+    #note.wall = 0
+    // 2. if a publishable content is not uploaded,
+    //    then upload it and assign it with default wall privacy level
+    u -> note not in n.posts implies upload[n, n', u, note, getDefaultPublishPrivacy]
+
+    /** frame condition **/
+    n'.friends = n.friends
+    n'.tags = n.tags
+
+    /** post condition **/
+    note'.wall = note.wall + owner.u
+}
+
+//Publish for Photo Publishable
+pred publish[n, n' : Nicebook, p, p' : Photo, u : User] {
     /** pre condition **/
     // 1. the publishable content is not yet published
     #p.wall = 0
     // 2. if a publishable content is not uploaded,
-    //    then upload it
-    u -> p not in n.posts implies upload[n, n', u, p]
+    //    then upload it and assign it with default wall privacy level
+    u -> p not in n.posts implies upload[n, n', u, p, getDefaultPublishPrivacy]
 
     /** frame condition **/
     n'.friends = n.friends
@@ -59,24 +114,45 @@ pred unpublish[n, n' : Nicebook, p, p' : Publishable, u : User] {
     p'.wall = p.wall - owner.u
 }
 
+// Overloaded function for adding the comment to a Publishable
 pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     /** pre condition **/
+    // Check the privacy of the comment c and see 
+    // if n.posts.cm(Person who owns the comment) belongs in this
     // comment has already been uploaded by user
-    #n.posts.cm = 1
+    #n.posts.cm = 1 and (
+        (
+            p.contentPrivacy.level = levelOnlyMe and
+            n.posts.cm = n.posts.p
+        ) or (
+            p.contentPrivacy.level = levelFriends and
+            n.posts.cm in getFriends[n, n.posts.p]
+        ) or (
+            p.contentPrivacy.level = levelFriendsOfFriends and
+            n.posts.cm in getFriendsOfFriends[n, n.posts.p]
+        ) or (
+            p.contentPrivacy.level = levelEveryone and
+            n.posts.cm in getEveryone[n]
+        )
+    )
     // the comment has not been added to any content
     all content : Content |
         cm not in content.comments
     // the publishable must have been published on the wall
     #p.wall > 0
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.tags = n.tags
     n''.friends = n'.friends
     n''.tags = n'.tags
     p'.wall = p.wall
+    p'.contentPrivacy = p.contentPrivacy
 
-    // post condition
+    /** post condition **/
+    //The comment inherits the privacy level of the parent
+    cm.contentPrivacy = p.contentPrivacy
+
     p'.comments = p.comments + cm
     
     // promotion
@@ -86,10 +162,26 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
         n''.posts = n'.posts + pu -> p'
 }
 
+// Overloaded function for adding the comment to a Comment
 pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
     /** pre condition **/
-    // comment has already been uploaded by user
-    #n.posts.cm = 1
+    // Check the privacy of the comment c and see 
+    // if n.posts.cm(Person who owns the comment) belongs in this
+    #n.posts.cm = 1 and (
+        (
+            c.contentPrivacy.level = levelOnlyMe and
+            n.posts.cm = n.posts.c
+        ) or (
+            c.contentPrivacy.level = levelFriends and
+            n.posts.cm in getFriends[n, n.posts.c]
+        ) or (
+            c.contentPrivacy.level = levelFriendsOfFriends and
+            n.posts.cm in getFriendsOfFriends[n, n.posts.c]
+        ) or (
+            c.contentPrivacy.level = levelEveryone and
+            n.posts.cm in getEveryone[n]
+        )
+    )
     // the comment has not been added to any content
     all content : Content |
         cm not in content.comments
@@ -97,13 +189,17 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
     some p : Publishable |
         p in ^comments.cm and #p.wall > 0
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.tags = n.tags
     n''.friends = n'.friends
     n''.tags = n'.tags
+    c'.contentPrivacy = c.contentPrivacy
 
-    // post condition
+    /** post condition **/
+    //The comment inherits the privacy level of the parent
+    cm.contentPrivacy = c.contentPrivacy
+
     c'.comments = c.comments + cm
     
     // promotion
@@ -113,49 +209,82 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
         n''.posts = n'.posts + pu -> c'
 }
 
+// Add Tag to a publishable
 pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
-    // pre condition
+    /** pre condition **/
+    // add precondition that only people who satisfy the privacy condtion can be tagged
+    #n.posts.p = 1 and (
+        (
+            p.contentPrivacy.level = levelFriends and
+            u in getFriends[n, n.posts.p]
+        ) or (
+            p.contentPrivacy.level = levelFriendsOfFriends and
+            u in getFriendsOfFriends[n, n.posts.p]
+        ) or (
+            p.contentPrivacy.level = levelEveryone and
+            u in getEveryone[n]
+        )
+    )
+    // Also the owner cannot be tagged in his/her post
+    u != n.posts.p
+    // the tag should not exist already
     p -> u not in n.tags
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.posts = n.posts
 
-    // post condition
+    /** post condition **/
     n'.tags = n.tags + p -> u
 }
 
+// Remove Tag from publishable
 pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
-    // pre condition
+    /** pre condition **/
     p -> u in n.tags
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.posts = n.posts
 
-    // post condition
+    /** post condition **/
     n'.tags = n.tags - p -> u
 }
 
+// Setting the privacy level of the wall
+pred setWallPrivacy[w, w' : Wall, pl : PrivacyLevel ]{
+/** pre condition **/
+
+/** frame condition **/
+    w'.owner = w.owner
+/** post condition **/
+    w'.wallPrivacy = pl
+}
+
 /** Assertion **/
-assert checkUpload {
-	all n, n' : Nicebook, u : User, c : Content |
+assert checkUploadNote {
+	all n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel |
+		upload[n, n', u, note, pl] and invariant[n] implies invariant[n']
+}
+check checkUploadNote
+
+assert checkUploadPhoto {
+    all n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel |
+		upload[n, n', u, p, pl] and invariant[n] implies invariant[n']
+}
+check checkUploadPhoto
+
+assert checkUploadComment {
+    all n, n' : Nicebook, u : User, c : Comment |
 		upload[n, n', u, c] and invariant[n] implies invariant[n']
 }
-check checkUpload
+check checkUploadComment
 
 assert checkRemove {
 	all n, n' : Nicebook, u : User, c : Content |
 		remove[n, n', u, c] and invariant[n] implies invariant[n']
 }
 check checkRemove
-
-assert checkUploadThenRemove {
-	all n, n', n'' : Nicebook, u : User, c : Content |
-		upload[n, n', u, c] and remove[n', n'', u, c] implies
-			n = n''
-}
-check checkUploadThenRemove
 
 assert checkAddTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
@@ -184,11 +313,11 @@ assert checkAddComment {
 }
 check checkAddComment
 
-assert checkPublish {
-	all n, n' : Nicebook, p, p' : Publishable, u : User |
-		publish[n, n', p, p', u] and invariant[n] implies invariant[n']
+assert checkPublishNote {
+	all n, n' : Nicebook, note, note' : Note, u : User |
+		publish[n, n', note, note', u] and invariant[n] implies invariant[n']
 }
-check checkPublish
+check checkPublishNote
 
 assert checkUnpublish {
 	all n, n' : Nicebook, p, p' : Publishable, u : User |
@@ -196,9 +325,9 @@ assert checkUnpublish {
 }
 check checkUnpublish
 
-assert checkPublishAndUnpublish {
-	all n, n', n'' : Nicebook, p, p', p'' : Publishable, u : User |
-		(publish[n, n', p, p', u] and unpublish[n', n'', p', p'', u]) implies
+assert checkPublishAndUnpublishNote {
+	all n, n', n'' : Nicebook, note, note', note'' : Note, u : User |
+		(publish[n, n', note, note', u] and unpublish[n', n'', note', note'', u]) implies
 		n = n''
 }
-check checkPublishAndUnpublish
+check checkPublishAndUnpublishNote

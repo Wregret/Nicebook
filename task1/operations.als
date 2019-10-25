@@ -122,16 +122,16 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     // comment has already been uploaded by user
     #n.posts.cm = 1 and (
         (
-            c.contentPrivacy.level = levelOnlyMe and
+            p.contentPrivacy.level = levelOnlyMe and
             n.posts.cm = n.posts.p
         ) or (
-            c.contentPrivacy.level = levelFriends and
+            p.contentPrivacy.level = levelFriends and
             n.posts.cm in getFriends[n, n.posts.p]
         ) or (
-            c.contentPrivacy.level = levelFriendsOfFriends and
+            p.contentPrivacy.level = levelFriendsOfFriends and
             n.posts.cm in getFriendsOfFriends[n, n.posts.p]
         ) or (
-            c.contentPrivacy.level = levelEveryone and
+            p.contentPrivacy.level = levelEveryone and
             n.posts.cm in getEveryone[n]
         )
     )
@@ -154,7 +154,6 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     cm.contentPrivacy = p.contentPrivacy
 
     p'.comments = p.comments + cm
-   
     
     // promotion
     // publishable already uploaded
@@ -216,13 +215,13 @@ pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     // add precondition that only people who satisfy the privacy condtion can be tagged
     #n.posts.p = 1 and (
         (
-            c.contentPrivacy.level = levelFriends and
+            p.contentPrivacy.level = levelFriends and
             u in getFriends[n, n.posts.p]
         ) or (
-            c.contentPrivacy.level = levelFriendsOfFriends and
+            p.contentPrivacy.level = levelFriendsOfFriends and
             u in getFriendsOfFriends[n, n.posts.p]
         ) or (
-            c.contentPrivacy.level = levelEveryone and
+            p.contentPrivacy.level = levelEveryone and
             u in getEveryone[n]
         )
     )

@@ -20,3 +20,10 @@ fun getFriendsOfFriends[n : Nicebook, u : User] : set User {
 fun getEveryone[n : Nicebook] : set User {
     n.friends.User
 }
+
+fun getDefaultPublishPrivacy : one PrivacyLevel {
+    {
+        pl : PrivacyLevel |
+            pl.level = levelFriends
+    }
+}
