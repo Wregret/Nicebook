@@ -183,30 +183,42 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
         n''.posts = n'.posts + pu -> c'
 }
 
+// Add Tag to a publishable
 pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
-    // pre condition
+    /** pre condition **/
     //TODO : Add precondition that only people who satisfy the privacy condtion can be tagged,
     // Also the owner cannot be tagged in his/her post
     p -> u not in n.tags
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.posts = n.posts
 
-    // post condition
+    /** post condition **/
     n'.tags = n.tags + p -> u
 }
 
+// Remove Tag from publishable
 pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
-    // pre condition
+    /** pre condition **/
     p -> u in n.tags
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.posts = n.posts
 
-    // post condition
+    /** post condition **/
     n'.tags = n.tags - p -> u
+}
+
+// Setting the privacy level of the wall
+pred setWallPrivacy[w, w' : Wall, pl : PrivacyLevel ]{
+/** pre condition **/
+
+/** frame condition **/
+    w'.owner = w.owner
+/** post condition **/
+    w'.wallPrivacy = pl
 }
 
 /** Assertion **/
@@ -261,11 +273,11 @@ assert checkAddComment {
 }
 check checkAddComment
 
-assert checkPublish {
-	all n, n' : Nicebook, p, p' : Publishable, u : User |
-		publish[n, n', p, p', u] and invariant[n] implies invariant[n']
+assert checkPublishNote {
+	all n, n' : Nicebook, note, note' : Note, u : User |
+		publish[n, n', note, note', u] and invariant[n] implies invariant[n']
 }
-check checkPublish
+check checkPublishNote
 
 assert checkUnpublish {
 	all n, n' : Nicebook, p, p' : Publishable, u : User |
@@ -273,9 +285,9 @@ assert checkUnpublish {
 }
 check checkUnpublish
 
-assert checkPublishAndUnpublish {
-	all n, n', n'' : Nicebook, p, p', p'' : Publishable, u : User |
-		(publish[n, n', p, p', u] and unpublish[n', n'', p', p'', u]) implies
+assert checkPublishAndUnpublishNote {
+	all n, n', n'' : Nicebook, note, note', note'' : Note, u : User |
+		(publish[n, n', note, note', u] and unpublish[n', n'', note', note'', u]) implies
 		n = n''
 }
-check checkPublishAndUnpublish
+check checkPublishAndUnpublishNote
