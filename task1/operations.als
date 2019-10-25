@@ -1,12 +1,30 @@
 // Project: Project 1
 // Team: Team 5
-// Model for system: Nicebook
+// Model for system: Nicebook   
 
 open nicebook
 open functions
 
 /** Operations **/
-pred upload[n, n' : Nicebook, u : User, c : Content, pl : PrivacyLevel] {
+// upload publishable contents
+pred upload[n, n' : Nicebook, u : User, p : Publishable, pl : PrivacyLevel] {
+    // pre condition
+    u -> p not in n.posts
+
+    // frame condition
+    n'.tags = n.tags
+    n'.friends = n.friends
+
+    // promotion
+
+
+    // post condition
+    p.contentPrivacy = pl
+    n'.posts = n.posts + u -> p
+}
+
+// upload comment
+pred upload[n, n' : Nicebook, u : User, c : Content] {
     // pre condition
     u -> c not in n.posts
 
@@ -15,7 +33,6 @@ pred upload[n, n' : Nicebook, u : User, c : Content, pl : PrivacyLevel] {
     n'.friends = n.friends
 
     // post condition
-    c.contentPrivacy = pl
     n'.posts = n.posts + u -> c
 }
 
