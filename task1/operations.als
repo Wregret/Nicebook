@@ -3,9 +3,10 @@
 // Model for system: Nicebook
 
 open nicebook
+open functions
 
 /** Operations **/
-pred upload[n, n' : Nicebook, u : User, c : Content] {
+pred upload[n, n' : Nicebook, u : User, c : Content, pl : PrivacyLevel] {
     // pre condition
     u -> c not in n.posts
 
@@ -14,6 +15,7 @@ pred upload[n, n' : Nicebook, u : User, c : Content] {
     n'.friends = n.friends
 
     // post condition
+    c.contentPrivacy = pl
     n'.posts = n.posts + u -> c
 }
 
@@ -34,8 +36,8 @@ pred publish[n, n' : Nicebook, p, p' : Publishable, u : User] {
     // 1. the publishable content is not yet published
     #p.wall = 0
     // 2. if a publishable content is not uploaded,
-    //    then upload it
-    u -> p not in n.posts implies upload[n, n', u, p]
+    //    then upload it and assign it with default wall privacy level
+    u -> p not in n.posts implies upload[n, n', u, p, getDefaultPublishPrivacy]
 
     /** frame condition **/
     n'.friends = n.friends
@@ -139,8 +141,8 @@ pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
 
 /** Assertion **/
 assert checkUpload {
-	all n, n' : Nicebook, u : User, c : Content |
-		upload[n, n', u, c] and invariant[n] implies invariant[n']
+	all n, n' : Nicebook, u : User, c : Content, pl : PrivacyLevel |
+		upload[n, n', u, c, pl] and invariant[n] implies invariant[n']
 }
 check checkUpload
 
@@ -151,8 +153,8 @@ assert checkRemove {
 check checkRemove
 
 assert checkUploadThenRemove {
-	all n, n', n'' : Nicebook, u : User, c : Content |
-		upload[n, n', u, c] and remove[n', n'', u, c] implies
+	all n, n', n'' : Nicebook, u : User, c : Content, pl : PrivacyLevel |
+		upload[n, n', u, c, pl] and remove[n', n'', u, c] implies
 			n = n''
 }
 check checkUploadThenRemove

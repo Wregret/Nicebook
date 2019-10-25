@@ -10,7 +10,7 @@ let levelFriendsOfFriends = 2
 let levelEveryone = 3
 
 sig PrivacyLevel {
-    level : Int
+    level : one Int
 }{
     level >= levelOnlyMe and
     level <= levelEveryone
