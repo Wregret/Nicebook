@@ -183,3 +183,22 @@ assert checkAddComment {
         addComment[n, n', n'', c, c', cm] and invariant[n] implies invariant[n']
 }
 check checkAddComment
+
+assert checkPublish {
+	all n, n' : Nicebook, p, p' : Publishable, u : User |
+		publish[n, n', p, p', u] and invariant[n] implies invariant[n']
+}
+check checkPublish
+
+assert checkUnpublish {
+	all n, n' : Nicebook, p, p' : Publishable, u : User |
+		unpublish[n, n', p, p', u] and invariant[n] implies invariant[n']
+}
+check checkUnpublish
+
+assert checkPublishAndUnpublish {
+	all, n, n', n'' : Nicebook, p, p', p'' : Publishable, u : User |
+		publish[n, n', p, p', u] and unpublish[n', n'', p', p'', u] implies
+			n = n'' and p = p''
+}
+check checkPublishAndUnpublish
