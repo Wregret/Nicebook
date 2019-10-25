@@ -117,10 +117,24 @@ pred unpublish[n, n' : Nicebook, p, p' : Publishable, u : User] {
 // Overloaded function for adding the comment to a Publishable
 pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     /** pre condition **/
-    //TODO : Check the privacy of the comment c and see 
-    //if n.posts.cm(Person who owns the comment) belongs in this
+    // Check the privacy of the comment c and see 
+    // if n.posts.cm(Person who owns the comment) belongs in this
     // comment has already been uploaded by user
-    #n.posts.cm = 1
+    #n.posts.cm = 1 and (
+        (
+            c.contentPrivacy.level = levelOnlyMe and
+            n.posts.cm = n.posts.p
+        ) or (
+            c.contentPrivacy.level = levelFriends and
+            n.posts.cm in getFriends[n, n.posts.p]
+        ) or (
+            c.contentPrivacy.level = levelFriendsOfFriends and
+            n.posts.cm in getFriendsOfFriends[n, n.posts.p]
+        ) or (
+            c.contentPrivacy.level = levelEveryone and
+            n.posts.cm in getEveryone[n]
+        )
+    )
     // the comment has not been added to any content
     all content : Content |
         cm not in content.comments
@@ -152,10 +166,23 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
 // Overloaded function for adding the comment to a Comment
 pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
     /** pre condition **/
-    //TODO : Check the privacy of the comment c and see 
-    //if n.posts.cm(Person who owns the comment) belongs in this
-    // comment has already been uploaded by user
-    #n.posts.cm = 1
+    // Check the privacy of the comment c and see 
+    // if n.posts.cm(Person who owns the comment) belongs in this
+    #n.posts.cm = 1 and (
+        (
+            c.contentPrivacy.level = levelOnlyMe and
+            n.posts.cm = n.posts.c
+        ) or (
+            c.contentPrivacy.level = levelFriends and
+            n.posts.cm in getFriends[n, n.posts.c]
+        ) or (
+            c.contentPrivacy.level = levelFriendsOfFriends and
+            n.posts.cm in getFriendsOfFriends[n, n.posts.c]
+        ) or (
+            c.contentPrivacy.level = levelEveryone and
+            n.posts.cm in getEveryone[n]
+        )
+    )
     // the comment has not been added to any content
     all content : Content |
         cm not in content.comments
