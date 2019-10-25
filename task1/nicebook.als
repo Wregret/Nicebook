@@ -13,11 +13,11 @@ one sig Nicebook {
 sig User {}
 sig Wall {
     owner : one User,
-    wallPrivacy : PrivacyLevel
+    wallPrivacy : one PrivacyLevel
 }
 
 abstract sig Content {
-    contentPrivacy : PrivacyLevel,
+    contentPrivacy : one PrivacyLevel,
     comments : set Comment
 }
 abstract sig Publishable extends Content {
