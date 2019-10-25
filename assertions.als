@@ -80,6 +80,10 @@ assert checkPublishAndUnpublishNote {
 }
 check checkPublishAndUnpublishNote
 
+/** Task 2: Privacy Violation **/
+// If the Nicebook is valid one AND the content is viewable to the given
+// user, then this user must be allowed by the content privacy level to
+// view.
 assert noPrivacyViolation {
     all n : Nicebook, u : User, c : Content |
         (invariant[n] and c in viewable[n, u]) implies

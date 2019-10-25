@@ -5,6 +5,7 @@
 In this project, following files are submitted
 - `nicebook.als`
   - containing all the signatures in the **Nicebook** social network as well as the invariants.
+- `scopes.als`
   - the **run** commands are also provided here.
 - `operations.als`
   - containing all the operations defined in **Nicebook**.
