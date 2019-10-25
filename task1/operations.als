@@ -213,8 +213,22 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
 // Add Tag to a publishable
 pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     /** pre condition **/
-    //TODO : Add precondition that only people who satisfy the privacy condtion can be tagged,
+    // add precondition that only people who satisfy the privacy condtion can be tagged
+    #n.posts.p = 1 and (
+        (
+            c.contentPrivacy.level = levelFriends and
+            u in getFriends[n, n.posts.p]
+        ) or (
+            c.contentPrivacy.level = levelFriendsOfFriends and
+            u in getFriendsOfFriends[n, n.posts.p]
+        ) or (
+            c.contentPrivacy.level = levelEveryone and
+            u in getEveryone[n]
+        )
+    )
     // Also the owner cannot be tagged in his/her post
+    u != n.posts.p
+    // the tag should not exist already
     p -> u not in n.tags
 
     /** frame condition **/
