@@ -117,6 +117,8 @@ pred unpublish[n, n' : Nicebook, p, p' : Publishable, u : User] {
 // Overloaded function for adding the comment to a Publishable
 pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     /** pre condition **/
+    //TODO : Check the privacy of the comment c and see 
+    //if n.posts.cm(Person who owns the comment) belongs in this
     // comment has already been uploaded by user
     #n.posts.cm = 1
     // the comment has not been added to any content
@@ -150,6 +152,8 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
 // Overloaded function for adding the comment to a Comment
 pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
     /** pre condition **/
+    //TODO : Check the privacy of the comment c and see 
+    //if n.posts.cm(Person who owns the comment) belongs in this
     // comment has already been uploaded by user
     #n.posts.cm = 1
     // the comment has not been added to any content
@@ -181,6 +185,8 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
 
 pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     // pre condition
+    //TODO : Add precondition that only people who satisfy the privacy condtion can be tagged,
+    // Also the owner cannot be tagged in his/her post
     p -> u not in n.tags
 
     // frame condition
