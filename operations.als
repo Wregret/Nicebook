@@ -197,8 +197,8 @@ assert checkUnpublish {
 check checkUnpublish
 
 assert checkPublishAndUnpublish {
-	all, n, n', n'' : Nicebook, p, p', p'' : Publishable, u : User |
-		publish[n, n', p, p', u] and unpublish[n', n'', p', p'', u] implies
-			n = n'' and p = p''
+	all n, n', n'' : Nicebook, p, p', p'' : Publishable, u : User |
+		(publish[n, n', p, p', u] and unpublish[n', n'', p', p'', u]) implies
+		n = n''
 }
 check checkPublishAndUnpublish

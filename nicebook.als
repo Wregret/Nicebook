@@ -28,23 +28,6 @@ sig Note extends Publishable {
 sig Photo extends Publishable {}
 sig Comment extends Content {}
 
-/** Functions **/
-fun getOnlyMe[u : User] : set User{
-    u
-}
-
-fun getFriends[n : Nicebook, u : User] : set User {
-    n.friends[u]
-}
-
-fun getFriendsOfFriends[n : Nicebook, u : User] : set User {
-    n.friends[n.friends[u]]
-}
-
-fun getEveryone[n : Nicebook] : set User {
-    n.friends.User
-}
-
 /** Invairants **/
 /** Signature Invariant **/
 pred nicebookInvariant[n : Nicebook] {
