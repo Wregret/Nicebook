@@ -206,44 +206,44 @@ assert checkUploadNote {
 	all n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel |
 		upload[n, n', u, note, pl] and invariant[n] implies invariant[n']
 }
-check checkUploadNote
+//check checkUploadNote
 
 assert checkUploadPhoto {
     all n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel |
 		upload[n, n', u, p, pl] and invariant[n] implies invariant[n']
 }
-check checkUploadPhoto
+//check checkUploadPhoto
 
 assert checkUploadComment {
     all n, n' : Nicebook, u : User, c : Comment |
 		upload[n, n', u, c] and invariant[n] implies invariant[n']
 }
-check checkUploadComment
+//check checkUploadComment
 
 assert checkRemove {
 	all n, n' : Nicebook, u : User, c : Content |
 		remove[n, n', u, c] and invariant[n] implies invariant[n']
 }
-check checkRemove
+//check checkRemove
 
 assert checkAddTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
 		addTag[n, n', p, u] and invariant[n] implies invariant[n']
 }
-check checkAddTag
+//check checkAddTag
 
 assert checkRemoveTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
 		removeTag[n, n', p, u] and invariant[n] implies invariant[n']
 }
-check checkRemoveTag
+//check checkRemoveTag
 
 assert checkAddThenRemoveTag {
 	all n, n', n'' : Nicebook, u : User, p : Publishable |
 		addTag[n, n', p, u] and removeTag[n', n'', p, u] implies
 			n = n''
 }
-check checkAddThenRemoveTag
+//check checkAddThenRemoveTag
 
 assert checkAddComment {
     all n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment |
