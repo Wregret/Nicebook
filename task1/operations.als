@@ -6,8 +6,26 @@ open nicebook
 open functions
 
 /** Operations **/
-// upload publishable contents
-pred upload[n, n' : Nicebook, u : User, p : Publishable, pl : PrivacyLevel] {
+// upload Note Publishable
+pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
+    // pre condition
+    u -> note not in n.posts
+
+    // frame condition
+    n'.tags = n.tags
+    n'.friends = n.friends
+
+    // promotion
+
+
+    // post condition
+    note.contentPrivacy = pl // Set privacy for Note
+    all p : note.photo | p.contentPrivacy = pl // Set privacy for all attached photos to note
+    n'.posts = n.posts + u -> note
+}
+
+//upload Photo Publishable
+pred upload[n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel] {
     // pre condition
     u -> p not in n.posts
 
@@ -23,8 +41,8 @@ pred upload[n, n' : Nicebook, u : User, p : Publishable, pl : PrivacyLevel] {
     n'.posts = n.posts + u -> p
 }
 
-// upload comment
-pred upload[n, n' : Nicebook, u : User, c : Content] {
+// Upload Comment
+pred upload[n, n' : Nicebook, u : User, c : Comment] {
     // pre condition
     u -> c not in n.posts
 
@@ -48,7 +66,25 @@ pred remove[n, n' : Nicebook, u : User, c : Content] {
     n'.posts = n.posts - u -> c
 }
 
-pred publish[n, n' : Nicebook, p, p' : Publishable, u : User] {
+// Publish for Note Publishable
+pred publish[n, n' : Nicebook, note, note' : Note, u : User] {
+    /** pre condition **/
+    // 1. the publishable content is not yet published
+    #note.wall = 0
+    // 2. if a publishable content is not uploaded,
+    //    then upload it and assign it with default wall privacy level
+    u -> note not in n.posts implies upload[n, n', u, note, getDefaultPublishPrivacy]
+
+    /** frame condition **/
+    n'.friends = n.friends
+    n'.tags = n.tags
+
+    /** post condition **/
+    note'.wall = note.wall + owner.u
+}
+
+//Publish for Photo Publishable
+pred publish[n, n' : Nicebook, p, p' : Photo, u : User] {
     /** pre condition **/
     // 1. the publishable content is not yet published
     #p.wall = 0
@@ -88,15 +124,20 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     // the publishable must have been published on the wall
     #p.wall > 0
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.tags = n.tags
     n''.friends = n'.friends
     n''.tags = n'.tags
     p'.wall = p.wall
+    p'.contentPrivacy = p.contentPrivacy
 
-    // post condition
+    /** post condition **/
+    //The comment inherits the privacy level of the parent
+    cm.contentPrivacy = p.contentPrivacy
+
     p'.comments = p.comments + cm
+   
     
     // promotion
     // publishable already uploaded
@@ -116,13 +157,17 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
     some p : Publishable |
         p in ^comments.cm and #p.wall > 0
 
-    // frame condition
+    /** frame condition **/
     n'.friends = n.friends
     n'.tags = n.tags
     n''.friends = n'.friends
     n''.tags = n'.tags
+    c'.contentPrivacy = c.contentPrivacy
 
-    // post condition
+    /** post condition **/
+    //The comment inherits the privacy level of the parent
+    cm.contentPrivacy = c.contentPrivacy
+
     c'.comments = c.comments + cm
     
     // promotion
@@ -157,24 +202,29 @@ pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
 }
 
 /** Assertion **/
-assert checkUpload {
-	all n, n' : Nicebook, u : User, c : Content, pl : PrivacyLevel |
-		upload[n, n', u, c, pl] and invariant[n] implies invariant[n']
+assert checkUploadNote {
+	all n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel |
+		upload[n, n', u, note, pl] and invariant[n] implies invariant[n']
 }
-check checkUpload
+check checkUploadNote
+
+assert checkUploadPhoto {
+    all n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel |
+		upload[n, n', u, p, pl] and invariant[n] implies invariant[n']
+}
+check checkUploadPhoto
+
+assert checkUploadComment {
+    all n, n' : Nicebook, u : User, c : Comment |
+		upload[n, n', u, c] and invariant[n] implies invariant[n']
+}
+check checkUploadComment
 
 assert checkRemove {
 	all n, n' : Nicebook, u : User, c : Content |
 		remove[n, n', u, c] and invariant[n] implies invariant[n']
 }
 check checkRemove
-
-assert checkUploadThenRemove {
-	all n, n', n'' : Nicebook, u : User, c : Content, pl : PrivacyLevel |
-		upload[n, n', u, c, pl] and remove[n', n'', u, c] implies
-			n = n''
-}
-check checkUploadThenRemove
 
 assert checkAddTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
