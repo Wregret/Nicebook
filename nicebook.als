@@ -83,6 +83,9 @@ pred wallInvariant[n : Nicebook] {
     // a user must own a wall
     all u : User |
         #owner.u = 1
+    // all publishable contents on any wall must have been uploaded
+    all p : Publishable |
+        #p.wall > 0 implies #n.posts.p = 1
 }
 
 /** Helper Invariant **/
@@ -125,4 +128,4 @@ pred invariant[n : Nicebook] {
 // run command
 run generateNicebook {
     all n : Nicebook | invariant[n]
-}
+} for 10 but exactly 4 User
