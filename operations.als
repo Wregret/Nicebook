@@ -38,8 +38,6 @@ pred remove[n, n' : Nicebook, u : User, c : Content] {
 //             // the publishable contents should not be on the wall already
 
 // }
-
-<<<<<<< Updated upstream
 pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     // pre condition
     p -> u not in n.tags
@@ -65,8 +63,6 @@ pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
 }
 
 /** Assertion **/
-=======
-/** Assertion **/
 assert checkUpload {
 	all n, n' : Nicebook, u : User, c : Content |
 		upload[n, n', u, c] and invariant[n] implies invariant[n']
@@ -85,4 +81,3 @@ assert checkUploadThenRemove {
 			n = n''
 }
 check checkUploadThenRemove
->>>>>>> Stashed changes
