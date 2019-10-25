@@ -8,28 +8,25 @@ open privacy
 one sig Nicebook {
     posts : User -> some Content,   // Contents created by users
     friends : User -> set User,     // Friendships between users
-    tag : Publishable -> one User   // Tags from publishable contents to users
+    tags : Publishable -> some User // Tags from publishable contents to users
 }
-sig User {
-    wall : one Wall
-}
+sig User {}
 sig Wall {
-    publishables : set Publishable
+    owner : one User
 }
 
 abstract sig Content {
-    privacyLevel : PrivacyLevel
+    privacyLevel : PrivacyLevel,
+    comments : set Comment
 }
 abstract sig Publishable extends Content {
-    publishableComment : set Comment
+    wall : set Wall
 }
 sig Note extends Publishable {
     photo : set Photo,
 }
 sig Photo extends Publishable {}
-sig Comment extends Content {
-    commentComment: set Comment
-}
+sig Comment extends Content {}
 
 /** Functions **/
 fun getOnlyMe[u : User] : set User{
@@ -61,10 +58,16 @@ pred commentInvariant[c : Comment] {
 }
 
 pred tagInvariant[n : Nicebook] {
-    // only the owner of a publishable content can tag his / her friends
+    // 1. only friends can be tagged
     all u1, u2 : User, p : Publishable |
-        p in n.posts[u1] and u2 in n.tag[p] implies
+        (p in n.posts[u1] and u2 in n.tags[p]) implies
         u2 in n.friends[u1]
+
+    // 2. if some user is tagged in a publishable content, 
+    //    then the content must be on his / her wall
+    // 3. a publishable content can only have tags if it has been published
+    all u : User, p : Publishable |
+        (u in n.tags[p] or u = n.posts.p) iff u in p.wall.owner
 }
 
 pred contentInvariant[n : Nicebook] {
@@ -74,17 +77,12 @@ pred contentInvariant[n : Nicebook] {
 }
 
 pred wallInvariant[n : Nicebook] {
-    // all the notes and photos posted on the user's wall must be 
-    // owned by the user or his / her friends
-    all u1, u2 : User |
-        u1.wall.publishables in n.posts[u2]
-        implies (u2 in n.friends[u1] or u1 = u2)
     // every user has his / her unique wall
-    all u1, u2 : User |
-        u1 != u2 implies u1.wall != u2.wall
-    // a wall must be owned by a user
-    all w : Wall |
-        #wall.w = 1
+    all w1, w2 : Wall |
+        w1 != w2 implies w1.owner != w2.owner
+    // a user must own a wall
+    all u : User |
+        #owner.u = 1
 }
 
 /** Helper Invariant **/
@@ -102,16 +100,16 @@ pred sysmetricFriendship[n : Nicebook] {
 pred noSelfComment[c : Comment] {
     // no comment can comment itself
     // no circular comments
-    c not in c.^commentComment
+    c not in c.^comments
 }
 
 pred noOrphanComment[c : Comment] {
     // a comment must be associated to a note or a photo or another comment
     some p : Publishable |
-        c in p.publishableComment
+        c in p.comments
     or
     some comment : Comment |
-        c in comment.commentComment and c != comment
+        c in comment.comments and c != comment
 }
 
 // run command
