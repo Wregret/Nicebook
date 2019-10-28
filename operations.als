@@ -9,7 +9,8 @@ open functions
 // upload Note Publishable
 pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
     /** pre condition **/
-    u -> note not in n.posts
+    //u -> note not in n.posts
+    all u : User | note not in n.posts[u]
 
     /** frame condition **/
     n'.tags = n.tags
@@ -27,7 +28,8 @@ pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
 //upload Photo Publishable
 pred upload[n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel] {
     /** pre condition **/
-    u -> p not in n.posts
+    //u -> p not in n.posts
+    all u : User | p not in n.posts[u]
 
     /** frame condition **/
     n'.tags = n.tags
@@ -44,7 +46,8 @@ pred upload[n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel] {
 // Upload Comment
 pred upload[n, n' : Nicebook, u : User, c : Comment] {
     /** pre condition **/
-    u -> c not in n.posts
+    //u -> c not in n.posts
+    all u : User | c not in n.posts[u]
 
     /** frame condition **/
     n'.tags = n.tags

@@ -6,7 +6,7 @@ open privacy
 
 /** Signatures **/
 // Signature of Nicebook.
-one sig Nicebook {
+sig Nicebook {
     posts : User -> some Content,   // Contents created by users
     friends : set User -> set User, // Friendships between users
     tags : Publishable -> some User // Tags from publishable contents to users
