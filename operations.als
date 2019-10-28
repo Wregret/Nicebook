@@ -20,8 +20,9 @@ pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
 
     /** post condition **/
     note.contentPrivacy = pl // Set privacy for Note
-    all p : note.photo | p.contentPrivacy = pl // Set privacy for all attached photos to note
-    n'.posts = n.posts + u -> note
+    all p : note.photo |
+        p.contentPrivacy = pl // Set privacy for all attached photos to note
+    n'.posts = n.posts + u -> note // Add the post to Nicebook
 }
 
 //upload Photo Publishable
@@ -54,6 +55,7 @@ pred upload[n, n' : Nicebook, u : User, c : Comment] {
     n'.posts = n.posts + u -> c
 }
 
+// Remove Content
 pred remove[n, n' : Nicebook, u : User, c : Content] {
     /** pre condition **/
     u -> c in n.posts

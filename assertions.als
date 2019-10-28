@@ -10,68 +10,86 @@ open functions
 open operations
 
 /** Assertion **/
+// check if uploading a note preserves the invariant
 assert checkUploadNote {
 	all n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel |
-		upload[n, n', u, note, pl] and invariant[n] implies invariant[n']
+		invariant[n] and upload[n, n', u, note, pl] implies invariant[n']
 }
-//check checkUploadNote
+check checkUploadNote
 
+// check if uploading a photo preserves the invariant
 assert checkUploadPhoto {
     all n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel |
-		upload[n, n', u, p, pl] and invariant[n] implies invariant[n']
+		invariant[n] and upload[n, n', u, p, pl] implies invariant[n']
 }
-//check checkUploadPhoto
+check checkUploadPhoto
 
+// check if uploading a comment preserves the invariant
 assert checkUploadComment {
     all n, n' : Nicebook, u : User, c : Comment |
-		upload[n, n', u, c] and invariant[n] implies invariant[n']
+		invariant[n] and upload[n, n', u, c] implies invariant[n']
 }
-//check checkUploadComment
+check checkUploadComment
 
+// check if removing a content preserves the invariant
 assert checkRemove {
 	all n, n' : Nicebook, u : User, c : Content |
-		remove[n, n', u, c] and invariant[n] implies invariant[n']
+		invariant[n] and remove[n, n', u, c] implies invariant[n']
 }
-//check checkRemove
+check checkRemove
 
+// check if adding a tag preserves the invariant
 assert checkAddTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
-		addTag[n, n', p, u] and invariant[n] implies invariant[n']
+		invariant[n] and addTag[n, n', p, u] implies invariant[n']
 }
-//check checkAddTag
+check checkAddTag
 
+// check if removing a tag preserves the invariant
 assert checkRemoveTag {
 	all n, n' : Nicebook, p : Publishable, u : User |
-		removeTag[n, n', p, u] and invariant[n] implies invariant[n']
+		invariant[n] and removeTag[n, n', p, u] implies invariant[n']
 }
-//check checkRemoveTag
+check checkRemoveTag
 
+// check if adding and removing a content get the same state for Nicebook
 assert checkAddThenRemoveTag {
 	all n, n', n'' : Nicebook, u : User, p : Publishable |
-		addTag[n, n', p, u] and removeTag[n', n'', p, u] implies
-			n = n''
+		invariant[n] and 
+		addTag[n, n', p, u] and 
+		removeTag[n', n'', p, u] implies
+		n = n''
 }
-//check checkAddThenRemoveTag
+check checkAddThenRemoveTag
 
+// check if adding a comment preserves the invariant
 assert checkAddComment {
+	// check adding a comment to a publishable
     all n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment |
-        addComment[n, n', n'', p, p', cm] and invariant[n] implies invariant[n']
+        invariant[n] and addComment[n, n', n'', p, p', cm] implies invariant[n']
+	// check adding a comment to a comment
     all n, n', n'' : Nicebook, c, c' : Comment, cm : Comment |
-        addComment[n, n', n'', c, c', cm] and invariant[n] implies invariant[n']
+        invariant[n] and addComment[n, n', n'', c, c', cm] implies invariant[n']
 }
-//check checkAddComment
+check checkAddComment
 
+// check publishing a note to a publishable content preserves the invariant
 assert checkPublishNote {
+	// check publishing a note
 	all n, n' : Nicebook, note, note' : Note, u : User |
-		publish[n, n', note, note', u] and invariant[n] implies invariant[n']
+		invariant[n] and publish[n, n', note, note', u] implies invariant[n']
+	// check publishing a photo
+	all n, n' : Nicebook, p, p' : Photo, u : User |
+		invariant[n] and publish[n, n', p, p', u] implies invariant[n']
 }
-//check checkPublishNote
+check checkPublishNote
 
+// check publishing a note to a publishable content preserves the invariant
 assert checkUnpublish {
 	all n, n' : Nicebook, p, p' : Publishable, u : User |
-		unpublish[n, n', p, p', u] and invariant[n] implies invariant[n']
+		invariant[n] and unpublish[n, n', p, p', u] implies invariant[n']
 }
-//check checkUnpublish
+check checkUnpublish
 
 
 /** Task 2: Privacy Violation **/
