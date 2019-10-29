@@ -72,7 +72,7 @@ assert checkAddThenRemoveTag {
 		invariant[n] and 
 		addTag[n, n', p, u] and 
 		removeTag[n', n'', p, u] implies
-		n = n''
+		(invariant[n'] and n = n'')
 }
 check checkAddThenRemoveTag
 

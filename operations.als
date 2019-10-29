@@ -59,12 +59,23 @@ pred remove[n, n' : Nicebook, u : User, note : Note] {
     n'.friends = n.friends
 
     /** post condition **/
+    // for all the photos under the note:
+    // 1. remove those photos
+    // 2. remove all the tags associated to those photos
     all p : note.photo |
         let u0 = n.posts.p |
-            remove[n, n', u0, p]
+            remove[n, n', u0, p] and
+            all u1 : n.tags[p] |
+                removeTag[n, n', p, u1]
+    // for all the comments under the note:
+    // 1. remove all the comments under the note by transitivity
     all c : note.^comments |
         let u0 = n.posts.c |
             remove[n, n', u0, c]
+    // remove all the tags associated to the note
+    all u2 : n.tags[note] |
+        removeTag[n, n', note, u2]
+    // remove the note from posts
     n'.posts = n.posts - u -> note
 }
 
@@ -78,9 +89,14 @@ pred remove[n, n' : Nicebook, u : User, p : Photo] {
     n'.friends = n.friends
 
     /** post condition **/
+    // for all the comments under the note:
+    // 1. remove all the comments under the photo by transitivity
     all c : p.^comments |
         let u0 = n.posts.c |
             remove[n, n', u0, c]
+    // remove all the tags associated to the photo
+    all u1 : n.tags[p] |
+        removeTag[n, n', p, u1]
     n'.posts = n.posts - u -> p
 }
 
