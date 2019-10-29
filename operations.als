@@ -67,8 +67,7 @@ pred remove[n, n' : Nicebook, u : User, note : Note] {
             remove[n, n', u0, p] and
             all u1 : n.tags[p] |
                 removeTag[n, n', p, u1]
-    // for all the comments under the note:
-    // 1. remove all the comments under the note by transitivity
+    // remove all the comments under the note by transitivity
     all c : note.^comments |
         let u0 = n.posts.c |
             remove[n, n', u0, c]
@@ -89,8 +88,7 @@ pred remove[n, n' : Nicebook, u : User, p : Photo] {
     n'.friends = n.friends
 
     /** post condition **/
-    // for all the comments under the note:
-    // 1. remove all the comments under the photo by transitivity
+    // remove all the comments under the photo by transitivity
     all c : p.^comments |
         let u0 = n.posts.c |
             remove[n, n', u0, c]
@@ -110,11 +108,14 @@ pred remove[n, n' : Nicebook, u : User, c : Comment] {
     n'.friends = n.friends
 
     /** post condition **/
+    // remove all the comments under the current comment by transitivity
     all cm : c.^comments |
         let u0 = n.posts.cm |
-            u0 -> cm in n.posts implies
             n'.posts = n.posts - u0 -> cm
     n'.posts = n.posts - u -> c
+
+    /** promotion **/
+    promotion[n, n', c]
 }
 
 // Publish for Note Publishable
@@ -201,12 +202,11 @@ pred addComment[n, n', n'' : Nicebook, p, p' : Publishable, cm : Comment] {
     p'.contentPrivacy = p.contentPrivacy
 
     /** post condition **/
-    //The comment inherits the privacy level of the parent
+    // The comment inherits the privacy level of the parent
     cm.contentPrivacy = p.contentPrivacy
-
+    // add the comment
     p'.comments = p.comments + cm
     
-    // promotion
     // publishable already uploaded
     let pu = n.posts.p | 
         n'.posts = n.posts - pu -> p and
@@ -248,9 +248,9 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
     c'.contentPrivacy = c.contentPrivacy
 
     /** post condition **/
-    //The comment inherits the privacy level of the parent
+    // The comment inherits the privacy level of the parent
     cm.contentPrivacy = c.contentPrivacy
-
+    // add the comment
     c'.comments = c.comments + cm
     
     // promotion
@@ -263,19 +263,12 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
 // Add Tag to a publishable
 pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     /** pre condition **/
-    // add precondition that only people who satisfy the privacy condtion can be tagged
-    #n.posts.p = 1 and (
-        (
-            p.contentPrivacy.level = levelFriends and
-            u in getFriends[n, n.posts.p]
-        ) or (
-            p.contentPrivacy.level = levelFriendsOfFriends and
-            u in getFriendsOfFriends[n, n.posts.p]
-        ) or (
-            p.contentPrivacy.level = levelEveryone and
-            u in getEveryone[n]
-        )
-    )
+    // the publishable content must be owned by one user
+    #n.posts.p = 1 
+    // the privacy level of the publishable content must be opener than OnlyMe
+    p.contentPrivacy.level > levelOnlyMe
+    // only friends can be tagged
+    u in n.friends[n.posts.p]
     // the publishable content must have been published on the owner's wall
     n.posts.p in p.wall.owner
     // the user cannot be tagged if the publishable content is already on the wall
@@ -313,4 +306,20 @@ pred setWallPrivacy[w, w' : Wall, pl : PrivacyLevel ]{
 
     /** post condition **/
     w'.wallPrivacy = pl
+}
+
+/** Promotion Operations **/
+// Update the content that the comment is attached to remove the comment
+pred promotion[n, n' : Nicebook, c : Comment] {
+    /** pre confition **/
+    c in n.posts[User]
+
+    /** frame condition **/
+    n'.friends = n.friends
+    n'.tags = n.tags
+
+    /** post condition **/
+    let ct = comments.c, ct' = ct |
+        ct'.comments = ct.comments - c and
+        n'.posts = n.posts ++ n.posts.ct -> ct'
 }
