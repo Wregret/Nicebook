@@ -31,12 +31,26 @@ assert checkUploadComment {
 }
 check checkUploadComment
 
-// check if removing a content preserves the invariant
-assert checkRemove {
-	all n, n' : Nicebook, u : User, c : Content |
-		invariant[n] and remove[n, n', u, c] implies invariant[n']
+// check if removing a note preserves the invariant
+assert checkRemoveNote {
+	all n, n' : Nicebook, u : User, note : Note |
+		invariant[n] and remove[n, n', u, note] implies invariant[n']
 }
-check checkRemove
+check checkRemoveNote
+
+// check if removing a note preserves the invariant
+assert checkRemovePhoto {
+	all n, n' : Nicebook, u : User, p : Photo |
+		invariant[n] and remove[n, n', u, p] implies invariant[n']
+}
+check checkRemovePhoto
+
+// check if removing a note preserves the invariant
+assert checkRemoveComment {
+	all n, n' : Nicebook, u : User, cm : Comment |
+		invariant[n] and remove[n, n', u, cm] implies invariant[n']
+}
+check checkRemoveComment
 
 // check if adding a tag preserves the invariant
 assert checkAddTag {

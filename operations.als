@@ -15,9 +15,6 @@ pred upload[n, n' : Nicebook, u : User, note : Note, pl : PrivacyLevel] {
     n'.tags = n.tags
     n'.friends = n.friends
 
-    // promotion
-
-
     /** post condition **/
     note.contentPrivacy = pl // Set privacy for Note
     all p : note.photo |
@@ -33,9 +30,6 @@ pred upload[n, n' : Nicebook, u : User, p : Photo, pl : PrivacyLevel] {
     /** frame condition **/
     n'.tags = n.tags
     n'.friends = n.friends
-
-    // promotion
-
 
     /** post condition **/
     p.contentPrivacy = pl
@@ -55,8 +49,43 @@ pred upload[n, n' : Nicebook, u : User, c : Comment] {
     n'.posts = n.posts + u -> c
 }
 
-// Remove Content
-pred remove[n, n' : Nicebook, u : User, c : Content] {
+// Remove a note and all photos and comments under it
+pred remove[n, n' : Nicebook, u : User, note : Note] {
+    /** pre condition **/
+    u -> note in n.posts
+
+    /** frame condition **/
+    n'.tags = n.tags
+    n'.friends = n.friends
+
+    /** post condition **/
+    all p : note.photo |
+        let u0 = n.posts.p |
+            remove[n, n', u0, p]
+    all c : note.^comments |
+        let u0 = n.posts.c |
+            remove[n, n', u0, c]
+    n'.posts = n.posts - u -> note
+}
+
+// Remove a photo and all comments under it
+pred remove[n, n' : Nicebook, u : User, p : Photo] {
+    /** pre condition **/
+    u -> p in n.posts
+
+    /** frame condition **/
+    n'.tags = n.tags
+    n'.friends = n.friends
+
+    /** post condition **/
+    all c : p.^comments |
+        let u0 = n.posts.c |
+            remove[n, n', u0, c]
+    n'.posts = n.posts - u -> p
+}
+
+// Remove a comment
+pred remove[n, n' : Nicebook, u : User, c : Comment] {
     /** pre condition **/
     u -> c in n.posts
 
@@ -65,6 +94,10 @@ pred remove[n, n' : Nicebook, u : User, c : Content] {
     n'.friends = n.friends
 
     /** post condition **/
+    all cm : c.^comments |
+        let u0 = n.posts.cm |
+            u0 -> cm in n.posts implies
+            n'.posts = n.posts - u0 -> cm
     n'.posts = n.posts - u -> c
 }
 
@@ -229,10 +262,10 @@ pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     )
     // the publishable content must have been published on the owner's wall
     n.posts.p in p.wall.owner
-    // also the owner cannot be tagged in his/her post
-    u != n.posts.p
+    // the user cannot be tagged if the publishable content is already on the wall
+    u not in p.wall.owner
     // the tag should not exist already
-    p -> u not in n.tags
+    u not in n.tags[p]
 
     /** frame condition **/
     n'.friends = n.friends
