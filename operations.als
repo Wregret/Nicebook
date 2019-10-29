@@ -62,18 +62,19 @@ pred remove[n, n' : Nicebook, u : User, note : Note] {
     // for all the photos under the note:
     // 1. remove those photos
     // 2. remove all the tags associated to those photos
-    all p : note.photo |
+    all p, p' : note.photo |
         let u0 = n.posts.p |
             remove[n, n', u0, p] and
             all u1 : n.tags[p] |
-                removeTag[n, n', p, u1]
+                removeTag[n, n', p, p', u1]
     // remove all the comments under the note by transitivity
     all c : note.^comments |
         let u0 = n.posts.c |
             remove[n, n', u0, c]
     // remove all the tags associated to the note
     all u2 : n.tags[note] |
-        removeTag[n, n', note, u2]
+        some note' : Note |
+            removeTag[n, n', note, note', u2]
     // remove the note from posts
     n'.posts = n.posts - u -> note
 }
@@ -94,7 +95,8 @@ pred remove[n, n' : Nicebook, u : User, p : Photo] {
             remove[n, n', u0, c]
     // remove all the tags associated to the photo
     all u1 : n.tags[p] |
-        removeTag[n, n', p, u1]
+        some p' : Photo |
+            removeTag[n, n', p, p', u1]
     n'.posts = n.posts - u -> p
 }
 
@@ -113,9 +115,10 @@ pred remove[n, n' : Nicebook, u : User, c : Comment] {
         let u0 = n.posts.cm |
             n'.posts = n.posts - u0 -> cm
     n'.posts = n.posts - u -> c
-
-    /** promotion **/
-    promotion[n, n', c]
+    // remove the comment from the content that is attached to
+    let ct = comments.c, ct' = ct |
+        ct'.comments = ct.comments - c and
+        n'.posts = n.posts ++ n.posts.ct -> ct'
 }
 
 // Publish for Note Publishable
@@ -261,7 +264,7 @@ pred addComment[n, n', n'' : Nicebook, c, c', cm : Comment] {
 }
 
 // Add Tag to a publishable
-pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
+pred addTag[n, n' : Nicebook, p, p' : Publishable, u : User] {
     /** pre condition **/
     // the publishable content must be owned by one user
     #n.posts.p = 1 
@@ -279,13 +282,19 @@ pred addTag[n, n' : Nicebook, p : Publishable, u : User] {
     /** frame condition **/
     n'.friends = n.friends
     n'.posts = n.posts
+    p'.contentPrivacy = p.contentPrivacy
+    p'.comments = p.comments
 
     /** post condition **/
-    n'.tags = n.tags + p -> u
+    // add the publishable content to the wall of the tagged user
+    let w = owner.u |
+        p'.wall = p.wall + w
+    // add the tag to the Nicebook tags mapping
+    n'.tags = n.tags + p' -> u
 }
 
 // Remove Tag from publishable.
-pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
+pred removeTag[n, n' : Nicebook, p, p': Publishable, u : User] {
     /** pre condition **/
     p -> u in n.tags
 
@@ -294,6 +303,10 @@ pred removeTag[n, n' : Nicebook, p : Publishable, u : User] {
     n'.posts = n.posts
 
     /** post condition **/
+    // add the publishable content to the wall of the tagged user
+    let w = owner.u |
+        p'.wall = p.wall - w
+    // remove the tag from the Nicebook tags mapping
     n'.tags = n.tags - p -> u
 }
 
@@ -306,20 +319,4 @@ pred setWallPrivacy[w, w' : Wall, pl : PrivacyLevel ]{
 
     /** post condition **/
     w'.wallPrivacy = pl
-}
-
-/** Promotion Operations **/
-// Update the content that the comment is attached to remove the comment
-pred promotion[n, n' : Nicebook, c : Comment] {
-    /** pre confition **/
-    c in n.posts[User]
-
-    /** frame condition **/
-    n'.friends = n.friends
-    n'.tags = n.tags
-
-    /** post condition **/
-    let ct = comments.c, ct' = ct |
-        ct'.comments = ct.comments - c and
-        n'.posts = n.posts ++ n.posts.ct -> ct'
 }

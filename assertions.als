@@ -54,25 +54,32 @@ check checkRemoveComment
 
 // check if adding a tag preserves the invariant
 assert checkAddTag {
-	all n, n' : Nicebook, p : Publishable, u : User |
-		invariant[n] and addTag[n, n', p, u] implies invariant[n']
+	all n, n' : Nicebook, p, p' : Publishable, u : User |
+		invariant[n] and addTag[n, n', p, p', u] implies invariant[n']
 }
 check checkAddTag
 
 // check if removing a tag preserves the invariant
 assert checkRemoveTag {
-	all n, n' : Nicebook, p : Publishable, u : User |
-		invariant[n] and removeTag[n, n', p, u] implies invariant[n']
+	all n, n' : Nicebook, p, p' : Publishable, u : User |
+		invariant[n] and removeTag[n, n', p, p', u] implies invariant[n']
 }
 check checkRemoveTag
 
 // check if adding and removing a content get the same state for Nicebook
 assert checkAddThenRemoveTag {
-	all n, n', n'' : Nicebook, u : User, p : Publishable |
-		invariant[n] and 
-		addTag[n, n', p, u] and 
-		removeTag[n', n'', p, u] implies
-		(invariant[n'] and n = n'')
+	all n, n', n'' : Nicebook, u : User, p, p', p'' : Publishable |
+		(
+			invariant[n] and 
+			addTag[n, n', p, p', u] and 
+			removeTag[n', n'', p', p'', u]
+		)
+		implies
+		(
+			invariant[n'] and
+			n = n'' and 
+			p = p''
+		)
 }
 check checkAddThenRemoveTag
 
