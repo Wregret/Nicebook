@@ -334,6 +334,6 @@ pred setWallPrivacy[w, w' : Wall, pl : PrivacyLevel ]{
 pred promotion[n, n' : Nicebook, p, p' : Publishable] {
     some u : User |
         p in n.posts[u] and p' in n'.posts[u]
-    let u = n.posts.p, u' = n.posts.p' |
+    let u = n.posts.p, u' = n'.posts.p' |
         n.posts[u] - n'.posts[u'] = p + p'
 }
