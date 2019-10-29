@@ -291,6 +291,9 @@ pred addTag[n, n' : Nicebook, p, p' : Publishable, u : User] {
         p'.wall = p.wall + w
     // add the tag to the Nicebook tags mapping
     n'.tags = n.tags + p' -> u
+    
+    /** promotion **/
+    promotion[n, n', p, p']
 }
 
 // Remove Tag from publishable.
@@ -301,6 +304,8 @@ pred removeTag[n, n' : Nicebook, p, p': Publishable, u : User] {
     /** frame condition **/
     n'.friends = n.friends
     n'.posts = n.posts
+    p'.contentPrivacy = p.contentPrivacy
+    p'.comments = p.comments
 
     /** post condition **/
     // add the publishable content to the wall of the tagged user
@@ -308,6 +313,9 @@ pred removeTag[n, n' : Nicebook, p, p': Publishable, u : User] {
         p'.wall = p.wall - w
     // remove the tag from the Nicebook tags mapping
     n'.tags = n.tags - p -> u
+
+    /** promotion **/
+    promotion[n, n', p, p']
 }
 
 // Setting the privacy level of the wall.
@@ -319,4 +327,13 @@ pred setWallPrivacy[w, w' : Wall, pl : PrivacyLevel ]{
 
     /** post condition **/
     w'.wallPrivacy = pl
+}
+
+/** Promotion **/
+// Update the Publishable into the Nicebook after state changes
+pred promotion[n, n' : Nicebook, p, p' : Publishable] {
+    some u : User |
+        p in n.posts[u] and p' in n'.posts[u]
+    let u = n.posts.p, u' = n.posts.p' |
+        n.posts[u] - n'.posts[u'] = p + p'
 }

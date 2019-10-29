@@ -67,6 +67,7 @@ assert checkRemoveTag {
 check checkRemoveTag
 
 // check if adding and removing a content get the same state for Nicebook
+// and get the same state for both the Nicebook and Publishable content
 assert checkAddThenRemoveTag {
 	all n, n', n'' : Nicebook, u : User, p, p', p'' : Publishable |
 		(
